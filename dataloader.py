@@ -3,12 +3,6 @@ import tarfile
 import pickle
 import os
 
-import var
-
-import numpy as np
-import tarfile
-import pickle
-import os
 
 def load_cifar10(cifar_path='data/cifar-10-python.tar.gz', val_fraction=0.1, random_seed=111):
     """
@@ -73,6 +67,3 @@ def load_cifar10(cifar_path='data/cifar-10-python.tar.gz', val_fraction=0.1, ran
 
 
 
-############################################
-##### Convert numpy to var            ######
-############################################
