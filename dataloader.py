@@ -2,7 +2,7 @@ import numpy as np
 import tarfile
 import pickle
 import os
-
+import gzip
 
 def load_cifar10(cifar_path='data/cifar-10-python.tar.gz', val_fraction=0.1, random_seed=111):
     """
@@ -64,6 +64,60 @@ def load_cifar10(cifar_path='data/cifar-10-python.tar.gz', val_fraction=0.1, ran
     print("Test set:", X_test.shape, y_test.shape)
 
     return X_train, y_train, X_val, y_val, X_test, y_test
+
+
+def load_mnist(mnist_path='/workspaces/02456-deep-learning/data/mnist', val_fraction=0.1, random_seed=111):
+    """
+    Load MNIST dataset and return train, validation, and test sets.
+    Returns:
+        X_train, y_train, X_val, y_val, X_test, y_test
+        Shapes: (N, 1, 28, 28), (N,)
+    """
+    
+    def load_mnist_file(filename):
+        """Load MNIST file in idx format"""
+        with gzip.open(filename, 'rb') as f:
+            if 'images' in filename:
+                data = np.frombuffer(f.read(), np.uint8, offset=16)
+                data = data.reshape(-1, 28, 28)
+            else:  # labels
+                data = np.frombuffer(f.read(), np.uint8, offset=8)
+            return data
+
+    # Paths to MNIST files
+    train_images_file = os.path.join(mnist_path, 'train-images-idx3-ubyte.gz')
+    train_labels_file = os.path.join(mnist_path, 'train-labels-idx1-ubyte.gz')
+    test_images_file = os.path.join(mnist_path, 't10k-images-idx3-ubyte.gz')
+    test_labels_file = os.path.join(mnist_path, 't10k-labels-idx1-ubyte.gz')
+
+    # Load data
+    X_train_all = load_mnist_file(train_images_file)  # (60000, 28, 28)
+    y_train_all = load_mnist_file(train_labels_file)  # (60000,)
+    X_test = load_mnist_file(test_images_file)        # (10000, 28, 28)
+    y_test = load_mnist_file(test_labels_file)        # (10000,)
+
+    # Add channel dimension to match (N, C, H, W)
+    X_train_all = X_train_all[:, np.newaxis, :, :]  # (60000, 1, 28, 28)
+    X_test = X_test[:, np.newaxis, :, :]            # (10000, 1, 28, 28)
+
+    # Split train into train/validation
+    num_train = X_train_all.shape[0]
+    num_val = int(num_train * val_fraction)
+
+    np.random.seed(random_seed)
+    indices = np.random.permutation(num_train)
+
+    X_val = X_train_all[indices[:num_val]]
+    y_val = y_train_all[indices[:num_val]]
+    X_train = X_train_all[indices[num_val:]]
+    y_train = y_train_all[indices[num_val:]]
+
+    print("Train set:", X_train.shape, y_train.shape)
+    print("Validation set:", X_val.shape, y_val.shape)
+    print("Test set:", X_test.shape, y_test.shape)
+
+    return X_train, y_train, X_val, y_val, X_test, y_test
+
 
 
 
