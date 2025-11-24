@@ -1,36 +1,41 @@
+
 import numpy as np
 
 class Initializer:
-    """Base class for all weight initializers."""
-    def init_weights(self, n_in, n_out): # W^[l]
+    def init_weights(self, n_in, n_out):
         raise NotImplementedError
 
-    def init_bias(self, n_out): # b^[l]
+    def init_bias(self, n_out):
         raise NotImplementedError
+
 
 class ConstantInitializer(Initializer):
-    def __init__(self, weight=1.0, bias=0.0):
-        self.weight = weight
-        self.bias = bias
+    def __init__(self, weight=0.01, bias=0.0):
+        self.weight = float(weight)
+        self.bias = float(bias)
 
     def init_weights(self, n_in, n_out):
-        return np.full((n_in, n_out), self.weight)
+        return np.full((n_out, n_in), self.weight, dtype=float)
 
     def init_bias(self, n_out):
-        return np.full((n_out,), self.bias)
+        return np.full((n_out, 1), self.bias, dtype=float)
+
 
 class NormalInitializer(Initializer):
-    def __init__(self, mean=0.0, std=0.1):
+    def __init__(self, mean=0.0, std=0.01):
         self.mean = mean
         self.std = std
-    
+
     def init_weights(self, n_in, n_out):
-        return np.random.normal(self.mean, self.std, (n_out, n_in))
-    
+        return np.random.normal(self.mean, self.std, (n_out, n_in)).astype(float)
+
     def init_bias(self, n_out):
-        return np.zeros((n_out, 1))
+        return np.zeros((n_out, 1), dtype=float)
+
 
 # Specifically for ReLU activation function
+# We must also try a version with: std = np.sqrt(2.0 / max(1, n_in))
+# Keep this in mind when adding Xavier for tanh
 class HeInitializer(Initializer):
     def init_weights(self, n_in, n_out):
         std = np.sqrt(2 / n_in)
