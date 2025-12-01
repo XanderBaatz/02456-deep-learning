@@ -44,6 +44,8 @@ class DenseLayer(Layer):
     def __repr__(self):
         act_name = self.activation.__class__.__name__
         return (
+                      #We gave added more interesting metrics to the repr
+
             f"DenseLayer({self.W.shape[1]} -> {self.W.shape[0]}, Activation={act_name})\n"
             f"Weights shape: {self.W.shape}, min: {self.W.min():.6f}, max: {self.W.max():.6f}, mean: {self.W.mean():.6f}\n"
             f"Biases shape: {self.b.shape}, min: {self.b.min():.6f}, max: {self.b.max():.6f}, mean: {self.b.mean():.6f}"
