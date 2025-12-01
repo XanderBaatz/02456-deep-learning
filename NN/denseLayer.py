@@ -1,7 +1,6 @@
-
 import numpy as np
 from .activations import Softmax
-from .initializer import HeInitializer, NormalInitializer
+from .initializer import NormalInitializer, XavierInitializer, HeInitializer
 
 class Layer:
     def forward(self, A_prev):
@@ -16,15 +15,19 @@ class DenseLayer(Layer):
     Dense layer using weight shape (n_out, n_in) and bias (n_out, 1).
     activation: an Activation instance
     """
-    def __init__(self, 
-                 n_in:int,
-                 n_out:int, activation,
-                 initializer=None, 
-                 l2_coeff:float=0.0):
+    def __init__(
+        self, 
+        n_in:int,
+        n_out:int, activation,
+        initializer=None, 
+        l2_coeff:float=0.0
+        ):
         
         if initializer is None:
             if activation.__class__.__name__.lower().startswith("relu"):
                 initializer = HeInitializer()
+            if activation.__class__.__name__.lower().startswith("tanh") or activation.__class__.__name__.lower().startswith("sigmoid"):
+                initializer = XavierInitializer()
             else:
                 initializer = NormalInitializer(mean=0.0, std=0.01)
 
@@ -32,9 +35,9 @@ class DenseLayer(Layer):
         self.W = self.initializer.init_weights(n_in, n_out)  
         self.b = self.initializer.init_bias(n_out)           
         self.activation = activation
-        self.l2_coeff = float(l2_coeff) #This is the lambda
+        self.l2_coeff = float(l2_coeff) # lambda
 
-        #Caching during forward/backward
+        # Caching during forward/backward
         self.Z = None
         self.A_prev = None
 
@@ -47,21 +50,26 @@ class DenseLayer(Layer):
         )
 
     def forward(self, A_prev):
-        self.A_prev = A_prev
-        self.Z = np.dot(self.W, A_prev) + self.b  
+        # Save for backward
+        self.A_prev = A_prev                     # (n_in, m)
+        self.Z = np.dot(self.W, A_prev) + self.b # (n_out, m)
+
+        # Return activation
         return self.activation.forward(self.Z)
 
     def backward(self, dA):
-        m = self.A_prev.shape[1]
+        m = self.A_prev.shape[1] # batch size
 
         if isinstance(self.activation, Softmax):
-            #when using softmax + cross-entropy, loss.backward returns A - Y already
-            dZ = dA
+            dZ = dA # G, see explainer notebook
         else:
             dZ = self.activation.backward(dA)
 
-        dW = (1.0 / m) * np.dot(dZ, self.A_prev.T) + (self.l2_coeff / m) * self.W
+        # Gradients
+        dW = (1.0 / m) * np.dot(dZ, self.A_prev.T) + (self.l2_coeff / m) * self.W # regularization applied only to weights (UDL book)
         db = (1.0 / m) * np.sum(dZ, axis=1, keepdims=True)
+        
+        # Gradient for previous layer
         dA_prev = np.dot(self.W.T, dZ)
 
         return dA_prev, dW, db

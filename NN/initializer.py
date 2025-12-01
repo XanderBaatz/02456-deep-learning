@@ -1,4 +1,3 @@
-
 import numpy as np
 
 class Initializer:
@@ -33,12 +32,20 @@ class NormalInitializer(Initializer):
         return np.zeros((n_out, 1), dtype=float)
 
 
+# Specifically for Tanh and Sigmoid
+class XavierInitializer(Initializer):
+    def init_weights(self, n_in, n_out):
+        std = np.sqrt(2.0 / (n_in + n_out))
+        return np.random.normal(0, std, (n_out, n_in))
+    
+    def init_bias(self, n_out):
+        return np.zeros((n_out, 1))
+
+
 # Specifically for ReLU activation function
-# We must also try a version with: std = np.sqrt(2.0 / max(1, n_in))
-# Keep this in mind when adding Xavier for tanh
 class HeInitializer(Initializer):
     def init_weights(self, n_in, n_out):
-        std = np.sqrt(2 / n_in)
+        std = np.sqrt(2.0 / n_in)
         return np.random.normal(0, std, (n_out, n_in))
     
     def init_bias(self, n_out):

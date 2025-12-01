@@ -1,4 +1,3 @@
-
 import numpy as np
 
 class Activation:
@@ -46,15 +45,14 @@ class Identity(Activation):
     def backward(self, dA):
         return dA
 
+
 # Note: softmax is technically not an activation function, but we disguise it as one for easier implementation
 class Softmax(Activation):
-
     def forward(self, Z):
         # Z: (n_out, m)
-        Z_shift = Z - np.max(Z, axis=0, keepdims=True)     # stability
-        Z_shift = np.clip(Z_shift, -100, 100)
-        expZ = np.exp(Z_shift)
-        self.A = expZ / np.sum(expZ, axis=0, keepdims=True)
+        Z_shift = Z - np.max(Z, axis=0, keepdims=True)
+        exp_Z = np.exp(Z_shift)
+        self.A = exp_Z / np.sum(exp_Z, axis=0, keepdims=True)
         return self.A
 
     def backward(self, dA):
