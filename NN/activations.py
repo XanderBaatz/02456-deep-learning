@@ -21,7 +21,8 @@ class ReLU(Activation):
 class Sigmoid(Activation):
     def forward(self, Z):
         self.Z = Z
-        self.A = 1 / (1 + np.exp(-Z))
+        Z_clip = np.clip(Z, -100, 100)
+        self.A = 1 / (1 + np.exp(-Z_clip))
         return self.A
     
     def backward(self, dA):
