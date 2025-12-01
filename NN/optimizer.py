@@ -14,6 +14,8 @@ class SGD(Optimizer):
         layer.b -= self.lr * db
 
 
+#The adan optimizer is highly inspired by https://medium.com/the-ml-practitioner/how-to-implement-an-adam-optimizer-from-scratch-76e7b217f1cc
+
 class Adam(Optimizer):
     def __init__(self, learning_rate=0.001, beta1=0.9, beta2=0.999, eps=1e-8):
         self.lr = float(learning_rate)
